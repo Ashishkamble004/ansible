@@ -1,0 +1,10 @@
+---
+# tasks file for python
+- name: Install Python on Hosts
+  hosts: all
+  become: True
+  tasks: 
+   - name: Installing Python
+     yum:
+      name: python3
+      state: installed

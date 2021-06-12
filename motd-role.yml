@@ -1,9 +1,0 @@
----
-- name: Upate motd
-  hosts: all
-  user: ansible
-  become: True
-  
-  roles:
-  - role: motd
- 

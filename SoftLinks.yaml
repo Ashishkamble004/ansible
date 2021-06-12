@@ -1,0 +1,31 @@
+---
+- name: To Create softlin
+  hosts: all
+  become: yes
+  tasks:
+  - name: to create on app 1
+    file: 
+     path: /opt/sysops/blogs.txt
+     owner: tony
+     group: tony
+     state: touch
+    when: inventory_hostname == "stapp01"
+  - name: to create on app 2
+    when: inventory_hostname == "stapp02"
+    file: 
+     path: /opt/sysops/story.txt
+     owner: steve
+     group: steve
+     state: touch
+  - name: to create on app 3
+    when: inventory_hostname == "stapp03"
+    file: 
+     path: /opt/sysops/media.txt
+     owner: banner
+     group: banner
+     state: touch
+  - name: to create link
+    file:
+     src: /opt/sysops/
+     dest: /var/www/html
+     state: link

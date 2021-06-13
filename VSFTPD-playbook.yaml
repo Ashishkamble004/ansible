@@ -1,0 +1,20 @@
+---
+- name: Install VSFTPD on servers
+  hosts: all
+  become: True
+  tasks:
+          - name: Installing VSFTPD
+            yum:
+                    name: vsftpd
+                    state: installed
+          - name: Enabling VSFTPD Service
+            service:
+                    name: vsftpd
+                    enabled: true
+                    state: started
+          - name: Create Readme File
+            copy:
+                    content: "Welcome to this FTP Server"
+                    dest: /var/ftp/pub/README
+                    force: no
+                    mode: 0444

@@ -1,0 +1,45 @@
+---
+- name: Installing httpd firewalld on webservers
+  become: True
+  hosts: Ansible1
+  tasks:
+    - name: Installing httpd
+      yum:
+        name: httpd
+        state: installed
+    - name: Installing Firewalld
+      yum:
+        name: firewalld
+        state: installed
+    - name: Enabling HTTPD Service
+      service:
+        name: httpd
+        enabled: true
+        state: started
+    - name: Enabling firewalld Service
+      service:
+        name: firewalld
+        enabled: true
+        state: started
+    - name: Adding custom message to the index page
+      copy:
+        content: "Welcome to WebPage"
+        dest: /var/www/html/index.html
+        force: no
+    - name: Adding firewalld rule to enable HTTPD
+      firewalld:
+        service: http
+        permanent: true
+        state: enabled
+        immediate: yes
+
+- name: Testing Webpage Access
+  hosts: localhost
+  become: no
+  tasks:
+    - name: Connect to the webserver
+      uri:
+       url: http://Ansible1
+       return_content: yes
+       status_code: 200
+

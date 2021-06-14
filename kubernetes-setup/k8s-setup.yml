@@ -1,0 +1,86 @@
+---
+- name: Installing and configuring k8's
+  hosts: all
+  become: true
+  tasks: 
+        - name: Creating a repository file for Kubernetes
+          file:
+                path: /etc/yum.repos.d/kubernetes.repo
+                state: touch
+        - name: Adding Repo for k8s
+          blockinfile:
+           path: /etc/yum.repos.d/kubernetes.repo
+           owner: "{{ ansible_user }}"
+           group: "{{ ansible_user }}"
+           create: yes
+           block: |
+                [kubernetes]
+                name=Kubernetes
+                baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+                enabled=1
+                gpgcheck=1
+                repo_gpgcheck=1
+                gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+        - name: Installing K8 packages
+          yum:
+                 name: 
+                 - kubeadm
+                 - kubectl 
+                 - kubelet
+                 - firewalld
+                 state: installed 
+        - name: Enable and start kubelet
+          service:
+                name: kubelet
+                state: started
+                enabled: true
+                daemon_reload: yes
+        - name: Enable and start firewalld
+          service:
+                name: firewalld
+                state: started
+                enabled: true
+                daemon_reload: yes
+        - name: Allow Network Ports1 in Firewalld
+          firewalld:
+                port: 6443/tcp
+                permanent: true
+                state: enabled
+                immediate: yes
+        - name: Allow Network Ports2 in Firewalld
+          firewalld:
+                port: 10250/tcp
+                permanent: true
+                state: enabled
+                immediate: yes
+        - name: Changin cgroup from docker to systemd
+          shell: |
+                cat > /etc/docker/daemon.json <<EOF
+                {
+                  "exec-opts": ["native.cgroupdriver=systemd"],
+                  "log-driver": "json-file",
+                  "log-opts": {
+                                   "max-size": "100m"
+                               },
+                  "storage-driver": "overlay2"
+                }
+                EOF
+        - name: Enabling Bridge Firewall Rule
+          shell: "echo '1' > /proc/sys/net/bridge/bridge-nf-call-iptables"
+        - name: Initializing K8s cluster on master
+          command: kubeadm init --apiserver-advertise-address="173.31.56.182" --apiserver-cert-extra-sans="172.31.56.182"  --node-name Ansible1 --pod-network-cidr=192.168.0.0/16 ignore-preflight-errors all 
+          when: inventory_hostname == "Ansible1"
+        - name: Setup kubeconfig for ansible user
+          shell: |
+                 mkdir -p /home/ansible/.kube
+                 cp -i /etc/kubernetes/admin.conf /home/ansible/.kube/config
+                 chown ansible:ansible /home/ansible/.kube/config
+        - name: Installing weave
+          command: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+
+        - name: Generate join command
+          command: kubeadm token create --print-join-command
+          register: join_command
+
+        - name: Copy join command to local file
+          local_action: copy content={{ join_command.stdout }} dest="./join-command"

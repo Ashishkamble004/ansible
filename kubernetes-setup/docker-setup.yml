@@ -1,0 +1,45 @@
+---
+- name: Installing and configuring Docker as an container Engine for Kubernetes
+  hosts: all
+  become: true
+  tasks:
+  - name: Install pre-req packages
+    yum:
+        name: "{{ packages }}"
+        state: installed
+    vars:
+        packages:
+        - yum-utils
+        - device-mapper-persistent-data
+        - lvm2
+  - name: Remove Podman Docker
+    yum: 
+        name: 
+        - podman-docker
+        - podman
+        state: absent
+  - name: Add Docker repo
+    get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+  - name: Install Docker
+    yum:
+        name: "{{ docker_packages }}"
+        state: installed
+    vars:
+        docker_packages:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+  - name: Enable and start docker service
+    service: 
+        name: docker
+        enabled: true
+        state: started
+  - name: Add ansible user to docker group
+    user:
+        name: ansible
+        group: docker
+  - name: Disable swap
+    command: swapoff -a
+ 

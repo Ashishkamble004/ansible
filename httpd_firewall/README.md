@@ -1,3 +1,8 @@
+File Description
+================
+This file installs httpd and sets up firewall on the server to restrict connections. Also we make use of the uri module in ansible to test out successfull httpconnection requests
+
+
 Role Name
 =========
 

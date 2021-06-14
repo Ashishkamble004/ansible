@@ -1,0 +1,39 @@
+---
+- name: BlockInfile
+  hosts: all
+  become: true
+  tasks:
+  - name: Install httpd 
+    yum:
+     name: httpd
+     state: installed
+  - name: enabling httpd
+    service:
+     name: httpd
+     enabled: true
+     state: started
+  - name: Blockinfile section
+    blockinfile:
+     path: /root/facts.txt
+     mode: 0777
+     owner: "{{ ansible_user }}"
+     group: "{{ ansible_user }}"
+     create: yes
+     block: |
+      Ansible managed node IP is {{ ansible_default_ipv4.address }}
+  - name: create index file
+    file:
+      path: /var/www/html/index.html
+      state: touch
+      owner: "{{ ansible_user }}"
+      group: "{{ ansible_user }}"
+      mode: 0777
+  - name: copy to index
+    copy:
+     src: /root/facts.txt
+     dest: /var/www/html/index.html
+     remote_src: yes
+  - name: Start httpd
+    service:
+     name: httpd
+     state: restarted

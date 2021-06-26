@@ -1,0 +1,30 @@
+---
+ - name: Install httpd
+   hosts: all
+   become: True
+   tasks:
+   - name: Install
+     yum:
+      name: httpd
+      state: installed
+   - name: start httpd
+     service:
+      name: httpd
+      enabled: True
+      state: started
+   - name: Change perm
+     file:
+       path: /var/www/html/index.html
+       owner: apache
+       group: apache
+       mode: 0777
+       state: touch
+   - name: Blockinfile
+     blockinfile:
+      block: |
+       Welcome to XfusionCorp!
+
+       This is Nautilus sample file, created using Ansible!
+
+       Please do not modify this file manually!
+      path: /var/www/html/index.html

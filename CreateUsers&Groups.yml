@@ -1,0 +1,45 @@
+---
+- name: Ansbile KKE Add User & Group Task
+  hosts: stapp02
+  become: yes
+  tasks:
+  - name: Creating Admin Groups
+    group:
+     name:
+      admins
+     state: present
+  - name: Creating Dev Groups
+    group:
+     name:
+      developers
+     state: present
+  - name: Creating Admins Group Users
+    user:
+     name: "{{ item }}"
+     password: "{{ 'YchZHRcLkL' | password_hash ('sha512') }}"
+     state: present
+     group: admins
+    loop:
+    - rob
+    - joy
+    - david  
+  - name: Creating Developers Group Users
+    user:
+     name: "{{ item }}"
+     password: "{{ '8FmzjvFU6S' | password_hash ('sha512') }}"
+     home: /var/www
+     group: developers
+     state: present
+    loop:
+    - tim
+    - jim
+    - mark
+    - ray
+  - name: Adding admin users in wheels group
+    user:
+     name: "{{ item }}"
+     group: wheel
+    loop:
+    - rob
+    - joy
+    - david

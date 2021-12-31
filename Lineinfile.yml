@@ -1,0 +1,31 @@
+---
+ - name: Install httpd
+   hosts: all
+   become: True
+   tasks:
+   - name: Install
+     yum:
+      name: httpd
+      state: installed
+   - name: start httpd
+     service:
+      name: httpd
+      enabled: True
+      state: started
+   - name: Change perm
+     file:
+       path: /var/www/html/index.html
+       owner: apache
+       group: apache
+       mode: 0655
+       state: touch
+   - name: Blockinfile
+     blockinfile:
+      block: |
+       This is Nautilus sample file, created using Ansible!
+      path: /var/www/html/index.html
+   - name: LineInfile
+     lineinfile:
+      path: /var/www/html/index.html
+      insertbefore: '^This is Nautilus sample file'
+      line: Welcome to Nautilus Group! 

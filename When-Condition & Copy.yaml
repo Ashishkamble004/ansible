@@ -1,0 +1,29 @@
+---
+- name: Ansible Task
+  hosts: all
+  become: true
+  tasks:
+  - name: Copy app1
+    copy:
+     src: /usr/src/sysops/blog.txt
+     dest: /opt/sysops/
+     owner: tony
+     group: tony
+     mode: '0744'
+    when: inventory_hostname == "stapp01"
+  - name: Copy app2
+    copy:
+     src: /usr/src/sysops/story.txt
+     dest: /opt/sysops/
+     owner: steve
+     group: steve
+     mode: '0744'
+    when: inventory_hostname == "stapp02"
+  - name: Copy app3
+    copy:
+     src: /usr/src/sysops/media.txt
+     dest: /opt/sysops/
+     owner: banner
+     group: banner
+     mode: '0744'
+    when: inventory_hostname == "stapp03"
